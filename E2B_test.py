@@ -8,4 +8,4 @@ agent = CodeAgent(tools=[VisitWebpageTool()],
                   additional_authorized_imports=["requests","markdownify","bs4"],
                   use_e2b_executor=True)
 
-agent.run("what was abraham lincoln's first pet?")
+agent.run("whats the latest news on larson and tubro") 
