@@ -8,4 +8,4 @@ agent = CodeAgent(tools=[VisitWebpageTool()],
                   additional_authorized_imports=["requests","markdownify","bs4"],
                   use_e2b_executor=True)
 
-agent.run("whats the latest news on larson and tubro") 
+agent.run("who won the last world cup? of top 3 sports worldwide")  
