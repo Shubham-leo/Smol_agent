@@ -1,24 +1,34 @@
+"""
+This script demonstrates advanced usage of Smol Agent with custom tools for downloading models and generating images.
+It integrates the Hugging Face API to fetch the most downloaded model for a specific task and uses a custom text-to-image
+tool to create high-quality images based on user prompts.
+
+Requirements:
+- Install the `smolagents` library and required dependencies.
+- Set up an environment variable `HF_API_TOKEN` with your Hugging Face API token.
+"""
+
 from smolagents import CodeAgent, HfApiModel
 from smolagents import tool, Tool
-
-from huggingface_hub import InferenceClient
-from huggingface_hub import list_models
-
+from huggingface_hub import InferenceClient, list_models
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 @tool
 def model_download_tool(task: str) -> str:
     """
-    This is a tool that returns the most downloaded model of a given task on the Hugging Face Hub.
-    It returns the name of the checkpoint.
+    Retrieves the most downloaded model for a specific task from the Hugging Face Hub.
 
     Args:
-        task: The task for which to get the download count.
+        task: The task (e.g., "text-to-image") for which to fetch the most downloaded model.
+
+    Returns:
+        The model ID of the most downloaded checkpoint.
     """
+    # Get the most downloaded model for the specified task
     most_downloaded_model = next(iter(list_models(filter=task, sort="downloads", direction=-1)))
-    
     return most_downloaded_model.id
 
 class TextToImageTool(Tool):
