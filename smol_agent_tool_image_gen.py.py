@@ -32,39 +32,73 @@ def model_download_tool(task: str) -> str:
     return most_downloaded_model.id
 
 class TextToImageTool(Tool):
-    description = "This tool creates an image according to a prompt, which is a text description."
+    """
+    A custom tool for generating images based on text prompts using the Hugging Face Inference API.
+    """
+    description = (
+        "Generates an image based on a provided text prompt. For best results, include detailed descriptions "
+        "in the prompt, such as 'high-res' or 'photorealistic'."
+    )
     name = "image_generator"
     inputs = {
         "prompt": {
-            "type": "string", 
-            "description": "The image generator prompt. Don't hesitate to add details in the prompt to make the image look better, like 'high-res, photorealistic', etc."
+            "type": "string",
+            "description": "The text description for the image. Detailed prompts yield better results."
         },
         "model": {
             "type": "string",
-            "description": "The Hugging Face model ID to use for image generation. If not provided, will use the default model."
+            "description": "The Hugging Face model ID for image generation. Defaults to the current model if not specified."
         }
     }
     output_type = "image"
-    current_model = "black-forest-labs/FLUX.1-schnell"
+    current_model = "black-forest-labs/FLUX.1-schnell"  # Default model for image generation
 
-    def forward(self, prompt, model):
-        if model:
-            if model != self.current_model:
-                self.current_model = model
-                self.client = InferenceClient(model)
-        if not self.client:
+    def forward(self, prompt, model=None):
+        """
+        Generates an image using the specified model and prompt.
+
+        Args:
+            prompt: The text description for the image.
+            model: Optional. The Hugging Face model ID to use. Defaults to `current_model`.
+
+        Returns:
+            A success message indicating the prompt and model used for image generation.
+        """
+        # Update the model if a new one is provided
+        if model and model != self.current_model:
+            self.current_model = model
+            self.client = InferenceClient(model)
+        
+        # Initialize the client if not already done
+        if not hasattr(self, "client"):
             self.client = InferenceClient(self.current_model)
-            
+        
+        # Generate the image and save it locally
         image = self.client.text_to_image(prompt)
-        image.save("image.png")
-            
-        return f"Successfully saved image with this prompt: {prompt} using model: {self.current_model}"
+        image_path = "image.png"
+        image.save(image_path)
+        return f"Image saved as {image_path}. Prompt: '{prompt}'. Model: '{self.current_model}'."
 
+# Instantiate the custom text-to-image tool
 image_generator = TextToImageTool()
 
-model_id = "Qwen/QwQ-32B-Preview"
-
-agent = CodeAgent(tools=[image_generator, model_download_tool], model=HfApiModel())
-agent.run(
-    "Improve this prompt, then generate an image of it. Prompt: A cat wearing a hazmat suit in contaminated area.  Get the latest model for text-to-image from the Hugging Face Hub."
+# Initialize the Smol Agent with the custom tools
+agent = CodeAgent(
+    tools=[image_generator, model_download_tool],  # Add the tools
+    model=HfApiModel()                            # Use Hugging Face API for language processing
 )
+
+# Run a query that uses both tools
+response = agent.run(
+    "Improve this prompt, then generate an image of it. "
+    "Prompt: A cat wearing a hazmat suit in a contaminated area. "
+    "Get the latest model for text-to-image from the Hugging Face Hub."
+)
+
+# Print the response from the agent
+print(response)
+
+# Tips:
+# - Use `model_download_tool` to dynamically fetch the most popular models for any task.
+# - Combine tools to chain actions, such as downloading a model and using it for a task.
+# - Refine prompts iteratively for better results in text-to-image generation.
