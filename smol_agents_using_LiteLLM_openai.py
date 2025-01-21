@@ -9,7 +9,6 @@ Requirements:
 
 from smolagents import CodeAgent, LiteLLMModel
 
-# Initialize the OpenAI GPT-3.5-turbo model with low temperature for less randomness
 model = LiteLLMModel("openai/gpt-3.5-turbo", temperature=0.2)
 
 # List to store conversation history
@@ -28,11 +27,7 @@ while True:
 
     # Get the model's response based on the conversation history
     response = model(message, max_tokens=500)
-
-    # Extract the assistant's response content
     assistant_response = response.content
-
-    # Print the assistant's response
     print("Assistant:", assistant_response)
 
     # Append the assistant's response to the conversation history
